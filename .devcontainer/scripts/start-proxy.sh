@@ -4,6 +4,8 @@ set -e
 PROXY_PORT="${PROXY_PORT:-8080}"
 WEB_PORT="${WEB_PORT:-8081}"
 FLOW_FILE=""
+TOKEN_FILE="/home/node/.mitmproxy/mitmweb-token"
+WEB_PASSWORD="${MITMWEB_PASSWORD:-}"
 
 usage() {
   echo "Usage: start-proxy [OPTIONS]"
@@ -32,15 +34,29 @@ while [ $# -gt 0 ]; do
   esac
 done
 
+if [ -z "$WEB_PASSWORD" ]; then
+  if [ -f "$TOKEN_FILE" ]; then
+    WEB_PASSWORD="$(cat "$TOKEN_FILE")"
+  else
+    WEB_PASSWORD="$(openssl rand -hex 24)"
+    mkdir -p /home/node/.mitmproxy
+    printf '%s' "$WEB_PASSWORD" > "$TOKEN_FILE"
+    chmod 600 "$TOKEN_FILE"
+  fi
+fi
+
+if [ -n "$CODESPACES" ]; then
+  WEB_BASE_URL="https://${CODESPACE_NAME}-${WEB_PORT}.app.github.dev"
+else
+  WEB_BASE_URL="http://localhost:${WEB_PORT}"
+fi
+WEB_AUTH_URL="${WEB_BASE_URL}/?token=${WEB_PASSWORD}"
+
 if ss -tln 2>/dev/null | grep -q ":${PROXY_PORT} " || \
    lsof -i ":${PROXY_PORT}" &>/dev/null; then
   echo "⚠  Port ${PROXY_PORT} is already in use."
   echo "   If mitmweb is already running, open the UI:"
-  if [ -n "$CODESPACES" ]; then
-    echo "   https://${CODESPACE_NAME}-${WEB_PORT}.app.github.dev"
-  else
-    echo "   http://localhost:${WEB_PORT}"
-  fi
+  echo "   ${WEB_AUTH_URL}"
   echo "   To kill the existing process: kill \$(lsof -t -i :${PROXY_PORT})"
   exit 1
 fi
@@ -62,6 +78,7 @@ MITMWEB_CMD=(
   --web-host "0.0.0.0"
   --set "confdir=/home/node/.mitmproxy"
   --set "flow_detail=0"
+  --set "web_password=${WEB_PASSWORD}"
   --no-web-open-browser
 )
 
@@ -75,11 +92,12 @@ echo "🔍 Starting mitmweb..."
 echo "   Proxy listening on:  127.0.0.1:${PROXY_PORT}"
 echo ""
 if [ -n "$CODESPACES" ]; then
-  echo "   mitmweb UI:  https://${CODESPACE_NAME}-${WEB_PORT}.app.github.dev"
+  echo "   mitmweb UI (auth): ${WEB_AUTH_URL}"
   echo "   (If port ${WEB_PORT} didn't auto-forward, open the Ports tab)"
 else
-  echo "   mitmweb UI:  http://localhost:${WEB_PORT}"
+  echo "   mitmweb UI (auth): ${WEB_AUTH_URL}"
 fi
+echo "   (token persisted at ${TOKEN_FILE}; override with MITMWEB_PASSWORD)"
 echo ""
 echo "   In another terminal, run one of:"
 echo "     claude-via-proxy"

@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   ca-certificates curl wget git jq tmux \
   less procps sudo fzf zsh nano vim \
   iptables ipset iproute2 dnsutils \
-  unzip gnupg2 lsof \
+  unzip gnupg2 lsof openssl \
   && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --break-system-packages mitmproxy

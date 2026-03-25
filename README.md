@@ -63,7 +63,7 @@ start-proxy
 claude-via-proxy
 ```
 
-Then open mitmweb at `http://localhost:8081`.
+Then open the auth URL printed by `start-proxy` (it includes a required `?token=...` query string).
 
 ---
 
@@ -81,10 +81,10 @@ start-proxy
 gemini-via-proxy
 ```
 
-4. Open forwarded port **8081** (mitmweb UI), usually:
+4. Open forwarded port **8081** (mitmweb UI) using the full auth URL printed by `start-proxy`, usually:
 
 ```text
-https://<your-codespace-name>-8081.app.github.dev
+https://<your-codespace-name>-8081.app.github.dev/?token=<token>
 ```
 
 > If 8081 does not auto-forward, use the **Ports** tab and forward it manually.
@@ -170,6 +170,17 @@ start-proxy -p 9090 -w 9091
 PROXY_PORT=9090 claude-via-proxy
 ```
 
+### Mitmweb authentication token behavior
+
+- `start-proxy` sets `web_password` so mitmweb UI authentication is required.
+- The token is persisted at `/home/node/.mitmproxy/mitmweb-token`.
+- The printed UI URL includes `?token=<value>` so browser login is one-click.
+- To set your own stable token/password:
+
+```bash
+MITMWEB_PASSWORD='your-long-random-secret' start-proxy
+```
+
 ### Save captured flows to a file
 
 ```bash
@@ -223,6 +234,7 @@ Some license tiers may not allow self-signed proxy cert interception. Business/E
 - Confirm `start-proxy` is running.
 - Forward port 8081 manually in the Ports tab.
 - Use the printed URL in terminal output.
+- Make sure you include `?token=...` from the printed URL.
 
 ---
 

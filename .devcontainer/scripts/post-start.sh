@@ -33,10 +33,24 @@ echo "    source proxy-on     — Set proxy env vars manually"
 echo "    source proxy-off    — Unset proxy env vars"
 echo "    test-proxy          — Run verification checks"
 echo ""
+TOKEN_FILE="/home/node/.mitmproxy/mitmweb-token"
+MITMWEB_TOKEN=""
+if [ -f "$TOKEN_FILE" ]; then
+  MITMWEB_TOKEN="$(cat "$TOKEN_FILE")"
+fi
+
 if [ -n "$CODESPACES" ]; then
-  echo "  mitmweb UI: https://${CODESPACE_NAME}-8081.app.github.dev"
+  if [ -n "$MITMWEB_TOKEN" ]; then
+    echo "  mitmweb UI: https://${CODESPACE_NAME}-8081.app.github.dev/?token=${MITMWEB_TOKEN}"
+  else
+    echo "  mitmweb UI: https://${CODESPACE_NAME}-8081.app.github.dev"
+  fi
   echo "  (If port 8081 didn't auto-forward, open the Ports tab and forward it manually)"
 else
-  echo "  mitmweb UI: http://localhost:8081"
+  if [ -n "$MITMWEB_TOKEN" ]; then
+    echo "  mitmweb UI: http://localhost:8081/?token=${MITMWEB_TOKEN}"
+  else
+    echo "  mitmweb UI: http://localhost:8081"
+  fi
 fi
 echo ""
