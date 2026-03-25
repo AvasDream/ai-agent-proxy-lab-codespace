@@ -1,13 +1,74 @@
 #!/bin/bash
 
+set -e
+
+ensure_node_owned_dir() {
+  local dir="$1"
+  if [ ! -d "$dir" ]; then
+    sudo mkdir -p "$dir"
+  fi
+  sudo chown -R node:node "$dir"
+}
+
+# Fix ownership for persisted volumes/directories that can be root-owned in Codespaces.
+ensure_node_owned_dir /home/node/.mitmproxy
+ensure_node_owned_dir /home/node/.claude
+ensure_node_owned_dir /home/node/.codex
+ensure_node_owned_dir /home/node/.gemini
+ensure_node_owned_dir /home/node/.copilot
+ensure_node_owned_dir /home/node/.config
+ensure_node_owned_dir /home/node/.config/gh
+ensure_node_owned_dir /home/node/.config/opencode
+ensure_node_owned_dir /commandhistory
+
+seed_history_file() {
+  local history_file="$1"
+  shift
+  touch "$history_file"
+  for cmd in "$@"; do
+    if ! grep -Fxq "$cmd" "$history_file"; then
+      echo "$cmd" >> "$history_file"
+    fi
+  done
+}
+
+seed_shell_history() {
+  local commands=(
+    "start-proxy"
+    "claude-via-proxy"
+    "gemini-via-proxy"
+    "codex-via-proxy"
+    "copilot-via-proxy"
+    "opencode-via-proxy"
+    "source proxy-on"
+    "source proxy-off"
+    "test-proxy"
+  )
+
+  seed_history_file /home/node/.bash_history "${commands[@]}"
+  seed_history_file /home/node/.zsh_history "${commands[@]}"
+  if [ -d /commandhistory ]; then
+    seed_history_file /commandhistory/.bash_history "${commands[@]}"
+    seed_history_file /commandhistory/.zsh_history "${commands[@]}"
+  fi
+
+  sudo chown node:node /home/node/.bash_history /home/node/.zsh_history
+  if [ -f /commandhistory/.bash_history ]; then
+    sudo chown node:node /commandhistory/.bash_history
+  fi
+  if [ -f /commandhistory/.zsh_history ]; then
+    sudo chown node:node /commandhistory/.zsh_history
+  fi
+}
+
+seed_shell_history
+
 if [ ! -f /home/node/.mitmproxy/mitmproxy-ca-cert.pem ]; then
   echo "Restoring mitmproxy CA from backup..."
-  mkdir -p /home/node/.mitmproxy
   cp /usr/local/share/mitmproxy-ca-backup/* /home/node/.mitmproxy/ 2>/dev/null || true
 fi
 
 if [ ! -f /home/node/.codex/config.toml ]; then
-  mkdir -p /home/node/.codex
   cp /usr/local/share/codex-config-backup/config.toml /home/node/.codex/ 2>/dev/null || true
 fi
 

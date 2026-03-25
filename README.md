@@ -64,6 +64,7 @@ claude-via-proxy
 ```
 
 Then open the auth URL printed by `start-proxy` (it includes a required `?token=...` query string).
+The devcontainer uses `zsh` as the default shell for the `node` user and VS Code integrated terminal.
 
 ---
 
@@ -193,6 +194,22 @@ start-proxy -f /tmp/capture.flow
 test-proxy
 ```
 
+### Command history is pre-seeded
+
+On container start, the devcontainer seeds `bash`/`zsh` history with:
+
+- `start-proxy`
+- `claude-via-proxy`
+- `gemini-via-proxy`
+- `codex-via-proxy`
+- `copilot-via-proxy`
+- `opencode-via-proxy`
+- `source proxy-on`
+- `source proxy-off`
+- `test-proxy`
+
+So you can use <kbd>↑</kbd> or reverse-search (`Ctrl+R`) immediately without retyping.
+
 ### Host-side full devcontainer test
 
 ```bash
@@ -235,6 +252,18 @@ Some license tiers may not allow self-signed proxy cert interception. Business/E
 - Forward port 8081 manually in the Ports tab.
 - Use the printed URL in terminal output.
 - Make sure you include `?token=...` from the printed URL.
+
+### 7) `gemini` / `opencode` EACCES under `~/.gemini` or `~/.config/opencode`
+
+On some Codespaces starts, mounted volumes can come up root-owned. `post-start.sh` now auto-fixes ownership for mounted auth/config dirs on startup.
+
+If your Codespace was created before this fix, run once:
+
+```bash
+bash /usr/local/bin/post-start.sh
+```
+
+Then retry `gemini`, `gemini-via-proxy`, or `opencode-via-proxy`.
 
 ---
 

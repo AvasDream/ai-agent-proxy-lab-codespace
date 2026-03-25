@@ -38,6 +38,9 @@
     "REQUESTS_CA_BUNDLE": "/etc/ssl/certs/ca-certificates.crt",
     "DEVCONTAINER": "true"
   },
+  "remoteEnv": {
+    "SHELL": "/usr/bin/zsh"
+  },
   "postStartCommand": "bash /usr/local/bin/post-start.sh",
   "customizations": {
     "vscode": {

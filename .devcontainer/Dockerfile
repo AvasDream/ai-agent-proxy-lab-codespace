@@ -12,6 +12,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   unzip gnupg2 lsof openssl \
   && rm -rf /var/lib/apt/lists/*
 
+RUN chsh -s /usr/bin/zsh node
+
 RUN pip install --break-system-packages mitmproxy
 
 RUN mkdir -p /home/node/.mitmproxy /usr/local/share/npm-global && \
