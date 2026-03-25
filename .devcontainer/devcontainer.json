@@ -1,0 +1,65 @@
+{
+  "name": "Agent Analyzer",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "TZ": "Europe/Zurich"
+    }
+  },
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb"
+  },
+  "forwardPorts": [8080, 8081],
+  "portsAttributes": {
+    "8081": {
+      "label": "mitmweb UI",
+      "onAutoForward": "openBrowser"
+    },
+    "8080": {
+      "label": "mitmproxy",
+      "onAutoForward": "silent"
+    }
+  },
+  "remoteUser": "node",
+  "mounts": [
+    "source=agent-analyzer-mitmproxy-${devcontainerId},target=/home/node/.mitmproxy,type=volume",
+    "source=agent-analyzer-claude-${devcontainerId},target=/home/node/.claude,type=volume",
+    "source=agent-analyzer-codex-${devcontainerId},target=/home/node/.codex,type=volume",
+    "source=agent-analyzer-gemini-${devcontainerId},target=/home/node/.gemini,type=volume",
+    "source=agent-analyzer-copilot-${devcontainerId},target=/home/node/.copilot,type=volume",
+    "source=agent-analyzer-gh-${devcontainerId},target=/home/node/.config/gh,type=volume",
+    "source=agent-analyzer-history-${devcontainerId},target=/commandhistory,type=volume"
+  ],
+  "containerEnv": {
+    "NODE_OPTIONS": "--max-old-space-size=4096",
+    "NODE_EXTRA_CA_CERTS": "/home/node/.mitmproxy/mitmproxy-ca-cert.pem",
+    "SSL_CERT_FILE": "/etc/ssl/certs/ca-certificates.crt",
+    "REQUESTS_CA_BUNDLE": "/etc/ssl/certs/ca-certificates.crt",
+    "DEVCONTAINER": "true"
+  },
+  "remoteEnv": {
+    "SHELL": "/usr/bin/zsh"
+  },
+  "postStartCommand": "bash /usr/local/bin/post-start.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        "eamodio.gitlens"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.profiles.linux": {
+          "zsh": {
+            "path": "zsh"
+          },
+          "bash": {
+            "path": "bash",
+            "icon": "terminal-bash"
+          }
+        }
+      }
+    }
+  }
+}
