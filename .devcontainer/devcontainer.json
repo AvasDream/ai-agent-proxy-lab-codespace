@@ -34,6 +34,7 @@
   "containerEnv": {
     "NODE_OPTIONS": "--max-old-space-size=4096",
     "NODE_EXTRA_CA_CERTS": "/home/node/.mitmproxy/mitmproxy-ca-cert.pem",
+    "CODEX_CA_CERTIFICATE": "/home/node/.mitmproxy/mitmproxy-ca-cert.pem",
     "SSL_CERT_FILE": "/etc/ssl/certs/ca-certificates.crt",
     "REQUESTS_CA_BUNDLE": "/etc/ssl/certs/ca-certificates.crt",
     "DEVCONTAINER": "true"

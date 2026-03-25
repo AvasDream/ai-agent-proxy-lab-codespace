@@ -12,6 +12,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   unzip gnupg2 lsof openssl \
   && rm -rf /var/lib/apt/lists/*
 
+RUN echo "node ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/node && chmod 0440 /etc/sudoers.d/node
+
 RUN chsh -s /usr/bin/zsh node
 
 RUN pip install --break-system-packages mitmproxy
@@ -29,6 +31,7 @@ RUN cp /home/node/.mitmproxy/mitmproxy-ca-cert.pem /usr/local/share/ca-certifica
 ENV NPM_CONFIG_PREFIX=/usr/local/share/npm-global
 ENV PATH=$PATH:/usr/local/share/npm-global/bin
 ENV NODE_EXTRA_CA_CERTS=/home/node/.mitmproxy/mitmproxy-ca-cert.pem
+ENV CODEX_CA_CERTIFICATE=/home/node/.mitmproxy/mitmproxy-ca-cert.pem
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 

@@ -48,6 +48,8 @@ echo ""
 echo "--- Certificate trust ---"
 printf "  %-28s" "NODE_EXTRA_CA_CERTS:"
 [ -f "$NODE_EXTRA_CA_CERTS" ] && echo "✓ ($NODE_EXTRA_CA_CERTS)" || echo "✗ NOT SET"
+printf "  %-28s" "CODEX_CA_CERTIFICATE:"
+[ -f "$CODEX_CA_CERTIFICATE" ] && echo "✓ ($CODEX_CA_CERTIFICATE)" || echo "✗ NOT SET"
 printf "  %-28s" "SSL_CERT_FILE:"
 [ -f "$SSL_CERT_FILE" ] && echo "✓ ($SSL_CERT_FILE)" || echo "✗ NOT SET"
 printf "  %-28s" "mitmproxy CA in OS store:"
@@ -57,6 +59,16 @@ echo ""
 echo "--- Shared helper ---"
 printf "  %-28s" "_proxy-common.sh:"
 [ -f "/usr/local/bin/_proxy-common.sh" ] && echo "✓" || echo "✗ NOT FOUND"
+
+echo ""
+echo "--- Permission checks ---"
+printf "  %-28s" "sudo NOPASSWD for node:"
+sudo -n true >/dev/null 2>&1 && echo "✓" || echo "✗"
+for dir in /home/node/.gemini /home/node/.config/opencode /home/node/.copilot; do
+  printf "  %-28s" "${dir}:"
+  mkdir -p "$dir" 2>/dev/null || true
+  [ -w "$dir" ] && echo "✓ writable" || echo "✗ not writable"
+done
 
 kill "$MITM_PID" 2>/dev/null || true
 echo ""

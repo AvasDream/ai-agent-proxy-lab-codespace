@@ -148,6 +148,27 @@ source proxy-off
 
 Tip: API keys are usually easier for proxy testing than OAuth callbacks.
 
+### Codex-specific recommended flow (important)
+
+Codex has known proxy gaps in some internal HTTP clients. Use this flow for reliable results:
+
+```bash
+# 1) Authenticate without proxy (recommended in containers)
+codex login --device-auth
+
+# 2) Then run through proxy
+codex-via-proxy
+```
+
+Or skip OAuth entirely:
+
+```bash
+export OPENAI_API_KEY=sk-...
+codex-via-proxy
+```
+
+This devcontainer sets `CODEX_CA_CERTIFICATE=/home/node/.mitmproxy/mitmproxy-ca-cert.pem` (plus `SSL_CERT_FILE`) so Codex can trust the mitmproxy CA.
+
 ---
 
 ## mitmweb filter cheatsheet
@@ -229,6 +250,7 @@ Run `start-proxy` first in another terminal. The wrappers intentionally fail fas
 This image pre-installs mitmproxy CA into system trust and sets:
 
 - `NODE_EXTRA_CA_CERTS`
+- `CODEX_CA_CERTIFICATE` (for Codex CLI)
 - `SSL_CERT_FILE`
 - `REQUESTS_CA_BUNDLE`
 
@@ -240,7 +262,12 @@ Some OAuth flows are sensitive to interception. Authenticate once without proxy,
 
 ### 4) Codex OAuth behind proxy
 
-If Codex OAuth fails, run `codex` once without proxy to log in, then use `codex-via-proxy`.
+Use one of these reliable paths:
+
+- Preferred: `codex login --device-auth` **without** proxy first, then run `codex-via-proxy`.
+- Best for automation/interception: set `OPENAI_API_KEY` and skip OAuth entirely.
+
+`codex-via-proxy` now checks for auth state (`/home/node/.codex/auth.json`) when `OPENAI_API_KEY` is not set and will print guidance instead of failing deep in the OAuth flow.
 
 ### 5) Copilot self-signed cert limitation
 
@@ -257,6 +284,8 @@ Some license tiers may not allow self-signed proxy cert interception. Business/E
 
 On some Codespaces starts, mounted volumes can come up root-owned. `post-start.sh` now auto-fixes ownership for mounted auth/config dirs on startup.
 
+Additionally, each `*-via-proxy` launcher now performs a writable-directory preflight and auto-repairs ownership when possible.
+
 If your Codespace was created before this fix, run once:
 
 ```bash
@@ -264,6 +293,8 @@ bash /usr/local/bin/post-start.sh
 ```
 
 Then retry `gemini`, `gemini-via-proxy`, or `opencode-via-proxy`.
+
+If permissions are still broken, rebuild the container so the latest `/etc/sudoers.d/node` configuration is applied.
 
 ---
 

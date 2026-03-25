@@ -4,6 +4,27 @@
 PROXY_PORT="${PROXY_PORT:-8080}"
 PROXY_ADDR="http://127.0.0.1:${PROXY_PORT}"
 
+ensure_writable_dirs() {
+  local dir
+  for dir in "$@"; do
+    mkdir -p "$dir" 2>/dev/null || true
+    if [ -w "$dir" ]; then
+      continue
+    fi
+
+    if sudo -n true >/dev/null 2>&1; then
+      sudo mkdir -p "$dir"
+      sudo chown -R node:node "$dir"
+    fi
+
+    if [ ! -w "$dir" ]; then
+      echo "✗  Directory is not writable: $dir"
+      echo "   Try: bash /usr/local/bin/post-start.sh"
+      return 1
+    fi
+  done
+}
+
 proxy_preflight() {
   local tool_name="$1"
 
