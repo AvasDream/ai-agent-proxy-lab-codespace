@@ -1,0 +1,108 @@
+# =============================================================================
+# Zsh Configuration — ai-agent-proxy-lab devcontainer
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Environment
+# ---------------------------------------------------------------------------
+export NPM_CONFIG_PREFIX=/usr/local/share/npm-global
+typeset -U path
+path=(/usr/local/bin /usr/local/sbin $path /usr/local/share/npm-global/bin)
+
+# CA certs (reinforced here for tmux shells where Docker ENV may not propagate)
+export NODE_EXTRA_CA_CERTS="${NODE_EXTRA_CA_CERTS:-/home/node/.mitmproxy/mitmproxy-ca-cert.pem}"
+export CODEX_CA_CERTIFICATE="${CODEX_CA_CERTIFICATE:-/home/node/.mitmproxy/mitmproxy-ca-cert.pem}"
+export SSL_CERT_FILE="${SSL_CERT_FILE:-/etc/ssl/certs/ca-certificates.crt}"
+export REQUESTS_CA_BUNDLE="${REQUESTS_CA_BUNDLE:-/etc/ssl/certs/ca-certificates.crt}"
+
+# ---------------------------------------------------------------------------
+# History — persistent across container rebuilds via /commandhistory volume
+# ---------------------------------------------------------------------------
+HISTFILE=/commandhistory/.zsh_history
+HISTSIZE=50000
+SAVEHIST=50000
+setopt APPEND_HISTORY
+setopt INC_APPEND_HISTORY
+setopt SHARE_HISTORY
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_IGNORE_SPACE
+setopt HIST_REDUCE_BLANKS
+setopt HIST_VERIFY
+
+# Fall back if /commandhistory is not writable yet (first-start race)
+if [[ ! -w "${HISTFILE%/*}" ]]; then
+  HISTFILE="$HOME/.zsh_history"
+fi
+
+# ---------------------------------------------------------------------------
+# Shell options
+# ---------------------------------------------------------------------------
+setopt AUTO_CD
+setopt AUTO_PUSHD
+setopt PUSHD_IGNORE_DUPS
+setopt INTERACTIVE_COMMENTS
+setopt NO_BEEP
+
+# ---------------------------------------------------------------------------
+# Completion
+# ---------------------------------------------------------------------------
+autoload -Uz compinit
+if [[ -n $HOME/.zcompdump(#qN.mh+24) ]]; then
+  compinit
+else
+  compinit -C
+fi
+
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*:descriptions' format '%B%d%b'
+
+# ---------------------------------------------------------------------------
+# Key bindings (emacs mode)
+# ---------------------------------------------------------------------------
+bindkey -e
+bindkey '^[[A' history-search-backward
+bindkey '^[[B' history-search-forward
+
+# ---------------------------------------------------------------------------
+# Aliases
+# ---------------------------------------------------------------------------
+alias ll='ls -lAh --color=auto'
+alias la='ls -A --color=auto'
+alias l='ls -CF --color=auto'
+alias gs='git status'
+alias gd='git diff'
+alias gl='git log --oneline -20'
+
+# ---------------------------------------------------------------------------
+# fzf integration (installed via apt)
+# ---------------------------------------------------------------------------
+if [[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]]; then
+  source /usr/share/doc/fzf/examples/key-bindings.zsh
+fi
+if [[ -f /usr/share/doc/fzf/examples/completion.zsh ]]; then
+  source /usr/share/doc/fzf/examples/completion.zsh
+fi
+
+# ---------------------------------------------------------------------------
+# Plugins
+# ---------------------------------------------------------------------------
+if [[ -f /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]]; then
+  source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+  ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+  ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=244'
+fi
+
+# zsh-syntax-highlighting must be sourced last before prompt init
+if [[ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]]; then
+  source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
+
+# ---------------------------------------------------------------------------
+# Starship prompt (must be last)
+# ---------------------------------------------------------------------------
+if command -v starship &>/dev/null; then
+  eval "$(starship init zsh)"
+fi

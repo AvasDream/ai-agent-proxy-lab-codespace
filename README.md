@@ -10,6 +10,7 @@ This repository gives you a single container that includes:
 - OpenAI Codex CLI
 - GitHub Copilot CLI
 - OpenCode CLI
+- agent-analyzer MVP (flow capture database + API + frontend)
 
 It is built to work both:
 
@@ -103,6 +104,15 @@ start-proxy
 # Terminal 2
 codex-via-proxy
 ```
+
+### Analyze captured flows (MVP)
+
+```bash
+# start mitmproxy + analyzer capture + API on :5555
+start-proxy --analyze
+```
+
+Then open `http://localhost:5555` (or forwarded port 5555 in Codespaces) to browse captured flows.
 
 ### Manual workflow
 

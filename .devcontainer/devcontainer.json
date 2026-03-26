@@ -10,7 +10,7 @@
     "cpus": 4,
     "memory": "8gb"
   },
-  "forwardPorts": [8080, 8081],
+  "forwardPorts": [8080, 8081, 5555, 5173],
   "portsAttributes": {
     "8081": {
       "label": "mitmweb UI",
@@ -19,6 +19,14 @@
     "8080": {
       "label": "mitmproxy",
       "onAutoForward": "silent"
+    },
+    "5555": {
+      "label": "agent-analyzer",
+      "onAutoForward": "notify"
+    },
+    "5173": {
+      "label": "analyzer-frontend",
+      "onAutoForward": "notify"
     }
   },
   "remoteUser": "node",
@@ -29,7 +37,8 @@
     "source=agent-analyzer-gemini-${devcontainerId},target=/home/node/.gemini,type=volume",
     "source=agent-analyzer-copilot-${devcontainerId},target=/home/node/.copilot,type=volume",
     "source=agent-analyzer-gh-${devcontainerId},target=/home/node/.config/gh,type=volume",
-    "source=agent-analyzer-history-${devcontainerId},target=/commandhistory,type=volume"
+    "source=agent-analyzer-history-${devcontainerId},target=/commandhistory,type=volume",
+    "source=agent-analyzer-db-${devcontainerId},target=/home/node/.agent-analyzer,type=volume"
   ],
   "containerEnv": {
     "NODE_OPTIONS": "--max-old-space-size=4096",

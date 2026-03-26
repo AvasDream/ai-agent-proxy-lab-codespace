@@ -4,6 +4,8 @@ set -e
 PROXY_PORT="${PROXY_PORT:-8080}"
 WEB_PORT="${WEB_PORT:-8081}"
 FLOW_FILE=""
+ANALYZE=false
+API_PORT="${API_PORT:-5555}"
 TOKEN_FILE="/home/node/.mitmproxy/mitmweb-token"
 WEB_PASSWORD="${MITMWEB_PASSWORD:-}"
 
@@ -16,6 +18,7 @@ usage() {
   echo "  -p, --proxy-port PORT   Proxy listen port (default: 8080)"
   echo "  -w, --web-port PORT     mitmweb UI port (default: 8081)"
   echo "  -f, --flow-file FILE    Save flows to file for later replay"
+  echo "  -a, --analyze           Enable analyzer capture + API server"
   echo "  -h, --help              Show this help"
   echo ""
   echo "Examples:"
@@ -29,6 +32,7 @@ while [ $# -gt 0 ]; do
     -p|--proxy-port) PROXY_PORT="$2"; shift 2 ;;
     -w|--web-port)   WEB_PORT="$2"; shift 2 ;;
     -f|--flow-file)  FLOW_FILE="$2"; shift 2 ;;
+    -a|--analyze)    ANALYZE=true; shift ;;
     -h|--help)       usage; exit 0 ;;
     *) echo "Unknown option: $1"; usage; exit 1 ;;
   esac
@@ -85,6 +89,15 @@ MITMWEB_CMD=(
 if [ -n "$FLOW_FILE" ]; then
   MITMWEB_CMD+=(--save-stream-file "$FLOW_FILE")
   echo "  Flows will be saved to: $FLOW_FILE"
+fi
+
+if [ "$ANALYZE" = true ]; then
+  MITMWEB_CMD+=(-s "/workspaces/ai-agent-proxy-lab-codespace/analyzer/backend/addon.py")
+  echo "  Flow capture enabled: /home/node/.agent-analyzer/flows.db"
+  uvicorn --app-dir /workspaces/ai-agent-proxy-lab-codespace/analyzer/backend server:app \
+    --host 0.0.0.0 --port "$API_PORT" --log-level warning &
+  API_PID=$!
+  trap "kill $API_PID 2>/dev/null || true" EXIT
 fi
 
 echo ""

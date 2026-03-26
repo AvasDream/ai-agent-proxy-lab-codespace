@@ -12,11 +12,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   unzip gnupg2 lsof openssl \
   && rm -rf /var/lib/apt/lists/*
 
+# Install starship prompt (fast, single binary)
+RUN curl -fsSL https://starship.rs/install.sh | sh -s -- --yes
+
+# Install zsh plugins (not available as apt packages in node base image)
+RUN git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions /usr/share/zsh-autosuggestions && \
+    git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting /usr/share/zsh-syntax-highlighting
+
 RUN echo "node ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/node && chmod 0440 /etc/sudoers.d/node
 
 RUN chsh -s /usr/bin/zsh node
 
 RUN pip install --break-system-packages mitmproxy
+RUN pip install --break-system-packages fastapi uvicorn[standard]
 
 RUN mkdir -p /home/node/.mitmproxy /usr/local/share/npm-global && \
     chown -R node:node /home/node/.mitmproxy /usr/local/share/npm-global
@@ -63,6 +71,7 @@ COPY scripts/copilot-via-proxy.sh /usr/local/bin/copilot-via-proxy
 COPY scripts/opencode-via-proxy.sh /usr/local/bin/opencode-via-proxy
 COPY scripts/post-start.sh /usr/local/bin/post-start.sh
 COPY scripts/test-proxy.sh /usr/local/bin/test-proxy
+COPY scripts/start-analyzer.sh /usr/local/bin/start-analyzer
 
 RUN chmod +x /usr/local/bin/proxy-on \
              /usr/local/bin/proxy-off \
@@ -74,7 +83,8 @@ RUN chmod +x /usr/local/bin/proxy-on \
              /usr/local/bin/copilot-via-proxy \
              /usr/local/bin/opencode-via-proxy \
              /usr/local/bin/post-start.sh \
-             /usr/local/bin/test-proxy && \
+             /usr/local/bin/test-proxy \
+             /usr/local/bin/start-analyzer && \
     chown node:node /usr/local/bin/proxy-on \
                     /usr/local/bin/proxy-off \
                     /usr/local/bin/start-proxy \
@@ -85,6 +95,10 @@ RUN chmod +x /usr/local/bin/proxy-on \
                     /usr/local/bin/copilot-via-proxy \
                     /usr/local/bin/opencode-via-proxy \
                     /usr/local/bin/post-start.sh \
-                    /usr/local/bin/test-proxy
+                    /usr/local/bin/test-proxy \
+                    /usr/local/bin/start-analyzer
+
+COPY --chown=node:node tmux.conf /home/node/.tmux.conf
+COPY --chown=node:node zshrc /home/node/.zshrc
 
 USER node
