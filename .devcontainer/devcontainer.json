@@ -10,7 +10,7 @@
     "cpus": 4,
     "memory": "8gb"
   },
-  "forwardPorts": [8080, 8081, 5555],
+  "forwardPorts": [8080, 8081, 5555, 5173],
   "portsAttributes": {
     "8081": {
       "label": "mitmweb UI",
@@ -22,6 +22,10 @@
     },
     "5555": {
       "label": "agent-analyzer",
+      "onAutoForward": "notify"
+    },
+    "5173": {
+      "label": "analyzer-frontend",
       "onAutoForward": "notify"
     }
   },

@@ -19,6 +19,7 @@ ensure_node_owned_dir /home/node/.copilot
 ensure_node_owned_dir /home/node/.config
 ensure_node_owned_dir /home/node/.config/gh
 ensure_node_owned_dir /home/node/.config/opencode
+ensure_node_owned_dir /home/node/.agent-analyzer
 ensure_node_owned_dir /commandhistory
 
 seed_history_file() {
@@ -35,6 +36,8 @@ seed_history_file() {
 seed_shell_history() {
   local commands=(
     "start-proxy"
+    "start-analyzer"
+    "tmux attach -t analyzer"
     "claude-via-proxy"
     "gemini-via-proxy"
     "codex-via-proxy"
@@ -84,7 +87,8 @@ echo "    Terminal 1:  mitmweb -p 8080 --web-port 8081 --web-host 0.0.0.0"
 echo "    Terminal 2:  source proxy-on && claude"
 echo ""
 echo "  Available commands:"
-echo "    start-proxy         — Start mitmweb (run once)"
+echo "    start-proxy         — Start mitmweb (run once)
+    start-analyzer      — Start full analyzer stack (tmux)"
 echo "    claude-via-proxy    — Claude Code through proxy"
 echo "    gemini-via-proxy    — Gemini CLI through proxy"
 echo "    codex-via-proxy     — Codex CLI through proxy"

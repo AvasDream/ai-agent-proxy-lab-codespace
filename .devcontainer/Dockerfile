@@ -91,4 +91,6 @@ RUN chmod +x /usr/local/bin/proxy-on \
                     /usr/local/bin/test-proxy \
                     /usr/local/bin/start-analyzer
 
+COPY --chown=node:node tmux.conf /home/node/.tmux.conf
+
 USER node

@@ -92,9 +92,9 @@ if [ -n "$FLOW_FILE" ]; then
 fi
 
 if [ "$ANALYZE" = true ]; then
-  MITMWEB_CMD+=(-s "/workspace/ai-agent-proxy-lab-codespace/analyzer/backend/addon.py")
+  MITMWEB_CMD+=(-s "/workspaces/ai-agent-proxy-lab-codespace/analyzer/backend/addon.py")
   echo "  Flow capture enabled: /home/node/.agent-analyzer/flows.db"
-  uvicorn --app-dir /workspace/ai-agent-proxy-lab-codespace/analyzer/backend server:app \
+  uvicorn --app-dir /workspaces/ai-agent-proxy-lab-codespace/analyzer/backend server:app \
     --host 0.0.0.0 --port "$API_PORT" --log-level warning &
   API_PID=$!
   trap "kill $API_PID 2>/dev/null || true" EXIT
