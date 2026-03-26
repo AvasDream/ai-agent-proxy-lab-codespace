@@ -26,9 +26,16 @@ seed_history_file() {
   local history_file="$1"
   shift
   touch "$history_file"
+  local ts
+  ts=$(date +%s)
   for cmd in "$@"; do
-    if ! grep -Fxq "$cmd" "$history_file"; then
-      echo "$cmd" >> "$history_file"
+    if ! grep -Fq "$cmd" "$history_file"; then
+      if [[ "$history_file" == *.zsh_history ]]; then
+        # Zsh extended history format (compatible with SHARE_HISTORY)
+        echo ": ${ts}:0;${cmd}" >> "$history_file"
+      else
+        echo "$cmd" >> "$history_file"
+      fi
     fi
   done
 }
