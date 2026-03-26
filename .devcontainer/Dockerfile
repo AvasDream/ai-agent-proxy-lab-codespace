@@ -17,6 +17,7 @@ RUN echo "node ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/node && chmod 0440 /etc/
 RUN chsh -s /usr/bin/zsh node
 
 RUN pip install --break-system-packages mitmproxy
+RUN pip install --break-system-packages fastapi uvicorn[standard]
 
 RUN mkdir -p /home/node/.mitmproxy /usr/local/share/npm-global && \
     chown -R node:node /home/node/.mitmproxy /usr/local/share/npm-global
@@ -63,6 +64,7 @@ COPY scripts/copilot-via-proxy.sh /usr/local/bin/copilot-via-proxy
 COPY scripts/opencode-via-proxy.sh /usr/local/bin/opencode-via-proxy
 COPY scripts/post-start.sh /usr/local/bin/post-start.sh
 COPY scripts/test-proxy.sh /usr/local/bin/test-proxy
+COPY scripts/start-analyzer.sh /usr/local/bin/start-analyzer
 
 RUN chmod +x /usr/local/bin/proxy-on \
              /usr/local/bin/proxy-off \
@@ -74,7 +76,8 @@ RUN chmod +x /usr/local/bin/proxy-on \
              /usr/local/bin/copilot-via-proxy \
              /usr/local/bin/opencode-via-proxy \
              /usr/local/bin/post-start.sh \
-             /usr/local/bin/test-proxy && \
+             /usr/local/bin/test-proxy \
+             /usr/local/bin/start-analyzer && \
     chown node:node /usr/local/bin/proxy-on \
                     /usr/local/bin/proxy-off \
                     /usr/local/bin/start-proxy \
@@ -85,6 +88,7 @@ RUN chmod +x /usr/local/bin/proxy-on \
                     /usr/local/bin/copilot-via-proxy \
                     /usr/local/bin/opencode-via-proxy \
                     /usr/local/bin/post-start.sh \
-                    /usr/local/bin/test-proxy
+                    /usr/local/bin/test-proxy \
+                    /usr/local/bin/start-analyzer
 
 USER node
