@@ -1,75 +1,19 @@
 {
-  "name": "Agent Analyzer",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "args": {
-      "TZ": "Europe/Zurich"
-    }
-  },
-  "hostRequirements": {
-    "cpus": 4,
-    "memory": "8gb"
-  },
-  "forwardPorts": [8080, 8081, 5555, 5173],
-  "portsAttributes": {
-    "8081": {
-      "label": "mitmweb UI",
-      "onAutoForward": "openBrowser"
-    },
-    "8080": {
-      "label": "mitmproxy",
-      "onAutoForward": "silent"
-    },
-    "5555": {
-      "label": "agent-analyzer",
-      "onAutoForward": "notify"
-    },
-    "5173": {
-      "label": "analyzer-frontend",
-      "onAutoForward": "notify"
-    }
-  },
-  "remoteUser": "node",
-  "mounts": [
-    "source=agent-analyzer-mitmproxy-${devcontainerId},target=/home/node/.mitmproxy,type=volume",
-    "source=agent-analyzer-claude-${devcontainerId},target=/home/node/.claude,type=volume",
-    "source=agent-analyzer-codex-${devcontainerId},target=/home/node/.codex,type=volume",
-    "source=agent-analyzer-gemini-${devcontainerId},target=/home/node/.gemini,type=volume",
-    "source=agent-analyzer-copilot-${devcontainerId},target=/home/node/.copilot,type=volume",
-    "source=agent-analyzer-gh-${devcontainerId},target=/home/node/.config/gh,type=volume",
-    "source=agent-analyzer-history-${devcontainerId},target=/commandhistory,type=volume",
-    "source=agent-analyzer-db-${devcontainerId},target=/home/node/.agent-analyzer,type=volume"
+  "name": "Secure Agent Lab Architecture Viewer",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "forwardPorts": [
+    8765
   ],
-  "containerEnv": {
-    "NODE_OPTIONS": "--max-old-space-size=4096",
-    "NODE_EXTRA_CA_CERTS": "/home/node/.mitmproxy/mitmproxy-ca-cert.pem",
-    "CODEX_CA_CERTIFICATE": "/home/node/.mitmproxy/mitmproxy-ca-cert.pem",
-    "SSL_CERT_FILE": "/etc/ssl/certs/ca-certificates.crt",
-    "REQUESTS_CA_BUNDLE": "/etc/ssl/certs/ca-certificates.crt",
-    "DEVCONTAINER": "true"
+  "portsAttributes": {
+    "8765": {
+      "label": "Private Architecture Viewer",
+      "onAutoForward": "openBrowser"
+    }
   },
-  "remoteEnv": {
-    "SHELL": "/usr/bin/zsh"
-  },
-  "postStartCommand": "bash /usr/local/bin/post-start.sh",
+  "postStartCommand": "nohup python3 -m http.server 8765 --bind 0.0.0.0 --directory architecture > /tmp/architecture-viewer.log 2>&1 < /dev/null &",
   "customizations": {
     "vscode": {
-      "extensions": [
-        "anthropic.claude-code",
-        "eamodio.gitlens"
-      ],
-      "settings": {
-        "terminal.integrated.defaultProfile.linux": "zsh",
-        "terminal.integrated.profiles.linux": {
-          "zsh": {
-            "path": "zsh"
-          },
-          "bash": {
-            "path": "bash",
-            "icon": "terminal-bash"
-          }
-        }
-      }
+      "extensions": []
     }
   }
 }
